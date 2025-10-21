@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Mise à jour et installation minimale des dépendances
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc libpq-dev && \
+    apt-get install -y --no-install-recommends gcc libpq-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Copie du fichier de dépendances
@@ -36,7 +36,7 @@ WORKDIR /app
 
 # Crée un utilisateur non-root pour exécuter l’app
 RUN useradd --create-home --shell /bin/bash appuser && \
-    mkdir -p /app && chown -R appuser /app
+    mkdir -p /app && chown -R appuser:appuser /app
 
 # Copie les fichiers applicatifs depuis le builder
 COPY --from=builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
@@ -50,7 +50,7 @@ EXPOSE 4000
 
 # Vérifie la santé de l’application
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:4000/health || exit 1
+    CMD curl -f http://localhost:4000/health || exit 1
 
 # Lancement de l’application
 CMD ["python", "main.py"]
