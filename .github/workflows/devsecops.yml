@@ -4,20 +4,59 @@ jobs:
   Dependances:
     runs-on: ubuntu-latest
     steps:
-      - name: Dependances
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Vérification du fichier requirements.txt
         run: |
-          echo "ecrire ici le scrypt de contrôle des dépendances"
+          echo "Contrôle du fichier requirements.txt..."
+          if [ ! -f requirements.txt ]; then
+            echo "❌ Le fichier requirements.txt est manquant !"
+            exit 1
+          fi
+
+          echo "✅ Fichier requirements.txt trouvé."
+          echo "🔍 Vérification du format..."
+          # Vérifie si le fichier est vide ou contient des lignes incorrectes
+          if ! grep -E '^[a-zA-Z0-9_.-]+(==[0-9a-zA-Z_.-]+)?$' requirements.txt >/dev/null 2>&1; then
+            echo "⚠️ Attention : certaines lignes de requirements.txt semblent incorrectes."
+          else
+            echo "✅ Le fichier requirements.txt semble bien formé."
+          fi
+
   Dockerfile:
     runs-on: ubuntu-latest
     needs: Dependances
     steps:
-      - name: Test Dockerfile
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Vérification du Dockerfile
         run: |
-          echo "ecrire ici le scrypt de contrôle du Dockerfile"
+          echo "Contrôle du Dockerfile..."
+          if [ ! -f Dockerfile ]; then
+            echo "❌ Le fichier Dockerfile est manquant !"
+            exit 1
+          fi
+
+          echo "✅ Dockerfile trouvé."
+          echo "🔍 Analyse rapide du contenu..."
+          # Exemple de vérification : présence d'instructions essentielles
+          if ! grep -q '^FROM' Dockerfile; then
+            echo "❌ Le Dockerfile ne contient pas d'instruction FROM."
+            exit 1
+          fi
+
+          if ! grep -q '^CMD' Dockerfile && ! grep -q '^ENTRYPOINT' Dockerfile; then
+            echo "⚠️ Aucune commande CMD ou ENTRYPOINT trouvée."
+          else
+            echo "✅ Dockerfile semble valide."
+          fi
+
   Deploy:
     runs-on: ubuntu-latest
     needs: Dockerfile
     steps:
       - name: Deploy
         run: |
-          echo "Rien à faire ici. Votre application est prête à être déployée"
+          echo "🚀 Rien à faire ici. Votre application est prête à être déployée."
